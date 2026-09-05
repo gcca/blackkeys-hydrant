@@ -1,0 +1,49 @@
+{
+  "langrev": "1",
+  "warnings": [ "no-unused" ],
+  "dependency-search-paths": [ "lib" ],
+  "dependencies": [ ],
+  "authors": [ "Cristhian Gonzales Castillo <yo@gcca.dev>" ],
+  "version": "0.1.0",
+  "sources": [ "src/**" ],
+  "test-sources": [ "test/**" ],
+  "script-dir": ".",
+  "exec": [
+    "mkdir -p build/generated",
+    "flatc --cpp -o build/generated schemas/user_auth.fbs schemas/user_signup.fbs schemas/hydration_message.fbs",
+    "clang++ -std=c++17 -mmacosx-version-min=26.0 -Ibuild/generated -I/opt/homebrew/include -c src/interop/fbufs.cpp -o build/fbufs.o"
+  ],
+  "cc": "clang",
+  "cflags": "-std=c23",
+  "macos-min-version": "26.0",
+  "c-include-dirs": [ "3rdparty", "3rdparty/argon2/include" ],
+  "link-args": [
+    "-std=c23",
+    "-I3rdparty",
+    "-I3rdparty/argon2/include",
+    "-I3rdparty/argon2/src",
+    "-I/opt/homebrew/include",
+    "3rdparty/cacheshim.c",
+    "3rdparty/argon2/src/argon2.c",
+    "3rdparty/argon2/src/core.c",
+    "3rdparty/argon2/src/encoding.c",
+    "3rdparty/argon2/src/ref.c",
+    "3rdparty/argon2/src/thread.c",
+    "3rdparty/argon2/src/blake2/blake2b.c",
+    "3rdparty/mqshim.c",
+    "build/fbufs.o",
+    "-pthread",
+    "-lc++",
+    "-L/opt/homebrew/lib"
+  ],
+  "linked-libraries": [ "memcached", "rabbitmq" ],
+  "build-dir": "build",
+  "output": "build",
+  "targets": {
+    "blackkeys-hydrant": {
+      "type": "executable",
+    },
+  },
+  "cpu": "generic",
+  "opt": "O0"
+}

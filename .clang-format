@@ -1,0 +1,13 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+SortIncludes:    true
+IncludeBlocks:   Regroup
+IncludeCategories:
+  - Regex: '^<.*\.(h|hpp)>$'
+    Priority: 2
+  - Regex: '^<.*>$'
+    Priority: 1
+  - Regex: '^"'
+    Priority: 3
+...

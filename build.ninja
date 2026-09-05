@@ -1,0 +1,66 @@
+binary = build/blackkeys-hydrant
+cache_nodes = 127.0.0.1:11211,127.0.0.1:11212
+mq_nodes = 127.0.0.1:5672,127.0.0.1:5673,127.0.0.1:5674
+
+rule c3_build
+  command = c3c --trust=full build blackkeys-hydrant
+  description = BUILD blackkeys-hydrant
+
+rule c3_test
+  command = c3c --trust=full test
+  description = TEST blackkeys-hydrant
+
+rule run
+  command = CACHE_NODES="$${CACHE_NODES:-$cache_nodes}" MQ_NODES="$${MQ_NODES:-$mq_nodes}" $binary
+  description = RUN blackkeys-hydrant
+  pool = console
+
+rule run_once
+  command = CACHE_NODES="$${CACHE_NODES:-$cache_nodes}" MQ_NODES="$${MQ_NODES:-$mq_nodes}" $binary --once
+  description = RUN blackkeys-hydrant --once
+  pool = console
+
+rule c3_format
+  command = c3fmt --in-place src/*.c3 src/hydrant/*.c3 src/interop/*.c3 test/*.c3
+  description = FORMAT C3
+
+rule c_format
+  command = clang-format -i 3rdparty/cacheshim.h 3rdparty/cacheshim.c 3rdparty/mqshim.h 3rdparty/mqshim.c src/interop/fbufs.cpp
+  description = FORMAT C
+
+rule c3_format_check
+  command = c3fmt --check src/*.c3 src/hydrant/*.c3 src/interop/*.c3 test/*.c3
+  description = CHECK C3 FORMAT
+
+rule c_format_check
+  command = clang-format --dry-run --Werror 3rdparty/cacheshim.h 3rdparty/cacheshim.c 3rdparty/mqshim.h 3rdparty/mqshim.c src/interop/fbufs.cpp
+  description = CHECK C FORMAT
+
+rule c3_clean
+  command = c3c clean 2>/dev/null || true
+  description = CLEAN C3
+
+rule remove_build
+  command = rm -rf build
+  description = REMOVE build
+
+build _build: c3_build
+build _test: c3_test
+build _run: run || _build
+build _once: run_once || _build
+build _fmt_c3: c3_format
+build _fmt_c: c_format || _fmt_c3
+build _fmt_check_c3: c3_format_check
+build _fmt_check_c: c_format_check || _fmt_check_c3
+build _clean_c3: c3_clean
+build _clean_output: remove_build || _clean_c3
+
+build build: phony _build
+build test: phony _test
+build run: phony _run
+build once: phony _once
+build fmt: phony _fmt_c
+build fmt-check: phony _fmt_check_c
+build clean: phony _clean_output
+
+default build

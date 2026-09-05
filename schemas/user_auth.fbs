@@ -1,0 +1,9 @@
+namespace blackkeys.schema;
+
+table UserAuth {
+  username:string (required);
+  password:string (required);
+}
+
+root_type UserAuth;
+file_identifier "BKUA";
